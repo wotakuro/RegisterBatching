@@ -1,0 +1,2 @@
+# RegisterBatching
+[Unity]StaticBatchingに限りなく近い形の事前登録式のMeshばっちんぐ
