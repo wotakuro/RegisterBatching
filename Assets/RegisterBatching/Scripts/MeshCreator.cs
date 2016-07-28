@@ -56,14 +56,14 @@ namespace RegisterBatching
         /// <param name="prefab"></param>
         /// <param name="pos"></param>
         /// <param name="rotation"></param>
-        public void Add(GameObject prefab, Vector3 pos, Quaternion rotation)
+        public void Add(GameObject prefab, Vector3 pos, Quaternion rotation,Vector3 scale)
         {
             var nodeList = this.GetNodeListInfo(prefab);
             if (nodeList == null) { return; }
             Matrix4x4 m = Matrix4x4.identity;
             foreach (var node in nodeList)
             {
-                m = Matrix4x4.TRS(pos, rotation, Vector3.one);
+                m = Matrix4x4.TRS(pos, rotation, scale);
                 m *= node.localMatrix;
                 var buffer = this.GetBuffer(node.material);
                 buffer.Add(node.mesh, ref m);

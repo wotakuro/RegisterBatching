@@ -15,7 +15,7 @@ public class RegisterSample : MonoBehaviour {
         {
             Vector3 pos = new Vector3( i * 4.0f, 0.0f, 10.0f );
             Quaternion rot = Quaternion.AngleAxis(Random.value * 360, Vector3.up);
-            creator.Add(prefab, pos, rot);
+            creator.Add(prefab, pos, rot,Vector3.one + Vector3.up * i * 0.2f);
         }
         creator.Generate(this.transform, 150, SortFunc);
 	}

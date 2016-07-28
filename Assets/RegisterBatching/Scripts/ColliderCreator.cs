@@ -40,11 +40,6 @@ namespace RegisterBatching
             public Quaternion rotation;
         }
 
-        /// <summary>
-        /// Prefab配置状態
-        /// </summary>
-        private struct GameObjectLocation { 
-        }
 
         /// <summary>
         /// Prefab情報
@@ -60,10 +55,11 @@ namespace RegisterBatching
         /// <param name="rotation"></param>
         public void Add(GameObject prefab, Vector3 pos, Quaternion rotation)
         {
-            var list = GetNodeListInfo(prefab);
+            if (!this.prefabInfo.ContainsKey(prefab))
+            {
+                this.prefabInfo.Add( prefab, GetNodeListInfo(prefab) );
+            }
         }
-
-
 
         /// <summary>
         /// Node情報一覧を取得します
@@ -81,8 +77,9 @@ namespace RegisterBatching
             }
             return list;
         }
+
         /// <summary>
-        /// Prefabから描画用のオブジェクトを生成します
+        /// PrefabからColliderのオブジェクトを生成します
         /// </summary>
         /// <param name="prefab"> prefabの指定</param>
         /// <returns></returns>
@@ -102,6 +99,15 @@ namespace RegisterBatching
                 result.Add(node);
             }
             return result;
+        }
+
+        /// <summary>
+        /// Generate処理を行います
+        /// </summary>
+        /// <param name="p"></param>
+        public void Generate(Transform p)
+        {
+
         }
 
     }
