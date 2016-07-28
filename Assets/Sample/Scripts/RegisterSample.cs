@@ -9,15 +9,20 @@ public class RegisterSample : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-        MeshCreator creator = new MeshCreator();
+        MeshCreator meshCreator = new MeshCreator();
+        ColliderCreator colliderCreator = new ColliderCreator();
 
         for (int i = 0; i < 10; ++i)
         {
             Vector3 pos = new Vector3( i * 4.0f, 0.0f, 10.0f );
             Quaternion rot = Quaternion.AngleAxis(Random.value * 360, Vector3.up);
-            creator.Add(prefab, pos, rot,Vector3.one + Vector3.up * i * 0.2f);
+            Vector3 size = Vector3.one + Vector3.up * i * 0.2f;
+            meshCreator.Add(prefab, pos, rot,size);
+            colliderCreator.Add(prefab, pos, rot, size);
         }
-        creator.Generate(this.transform, 150, SortFunc);
+        meshCreator.Generate(this.transform, 150, SortFunc);
+
+        colliderCreator.Generate(this.transform);
 	}
 
     private static int SortFunc(Vector3 a, Vector3 b)

@@ -40,12 +40,26 @@ namespace RegisterBatching
             public Quaternion rotation;
         }
 
+        /// <summary>
+        /// prefabをどう配置したのかを覚えておきます
+        /// </summary>
+        private struct PrefabPositioningInfo
+        {
+            public GameObject prefab;
+            public Vector3 pos;
+            public Quaternion rotation;
+            public Vector3 size;
+        }
 
         /// <summary>
         /// Prefab情報
         /// </summary>
         private Dictionary<GameObject, List<CollisionNode>> prefabInfo = new Dictionary<GameObject, List<CollisionNode>>();
 
+        /// <summary>
+        /// prefabの配置情報
+        /// </summary>
+        private List<PrefabPositioningInfo> prefabPositionList = new List<PrefabPositioningInfo>();
 
         /// <summary>
         /// コリジョンの登録
@@ -53,12 +67,15 @@ namespace RegisterBatching
         /// <param name="prefab"></param>
         /// <param name="pos"></param>
         /// <param name="rotation"></param>
-        public void Add(GameObject prefab, Vector3 pos, Quaternion rotation)
+        public void Add(GameObject prefab, Vector3 pos, Quaternion rotation,Vector3 size)
         {
-            if (!this.prefabInfo.ContainsKey(prefab))
-            {
-                this.prefabInfo.Add( prefab, GetNodeListInfo(prefab) );
-            }
+
+            PrefabPositioningInfo positioningInfo = new PrefabPositioningInfo();
+            positioningInfo.prefab = prefab;
+            positioningInfo.pos = pos;
+            positioningInfo.rotation = rotation;
+            positioningInfo.size = size;
+            prefabPositionList.Add(positioningInfo);
         }
 
         /// <summary>
@@ -107,7 +124,43 @@ namespace RegisterBatching
         /// <param name="p"></param>
         public void Generate(Transform p)
         {
+            GameObject obj = new GameObject("identity");
+            obj.transform.parent = p;
+            obj.transform.position = Vector3.zero;
+            obj.transform.rotation = Quaternion.identity;
 
+            foreach (var positioning in this.prefabPositionList)
+            {
+                var prefabColliderInfo = this.GetNodeListInfo(positioning.prefab);
+                if (prefabColliderInfo == null) { continue; }
+
+                foreach (var info in prefabColliderInfo)
+                {
+                    if (info.collider.isTrigger) { continue; }
+                    // sphere collider
+                    if (info.collider.GetType() == typeof(SphereCollider))
+                    {
+                        var origin = info.collider as SphereCollider;
+                        var sph = obj.AddComponent<SphereCollider>();
+                        sph.radius = origin.radius * GetMaxColumn( Vector3.Scale( info.scale , positioning.size) );
+                        sph.center = positioning.pos + positioning.rotation * Vector3.Scale(info.pos, positioning.size) +
+                             positioning.rotation * info.rotation * origin.center;
+                    }
+                    else if (info.collider.GetType() == typeof(BoxCollider))
+                    {
+
+                    }
+                    else if (info.collider.GetType() == typeof(CapsuleCollider))
+                    {
+
+                    }
+                }
+            }
+        }
+
+        private float GetMaxColumn(Vector3 vec)
+        {
+            return Mathf.Max(vec.x, vec.y, vec.z);
         }
 
     }
