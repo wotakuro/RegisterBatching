@@ -133,25 +133,76 @@ namespace RegisterBatching
         /// <param name="p">親のTransformを指定</param>
         public void Generate(Transform p)
         {
-            if (this.rendererSet != null)
+            if (this.rendererSet == null)
             {
-                foreach (var kv in this.rendererSet)
-                {
-                    if (kv.Key == null || kv.Value == null) { continue; }
-                    var obj = new GameObject(kv.Key.name);
-                    obj.transform.parent = p;
-                    obj.transform.position = Vector3.zero;
-                    obj.transform.rotation = Quaternion.identity;
-
-                    var filter = obj.AddComponent<MeshFilter>();
-                    var renderer = obj.AddComponent<MeshRenderer>();
-
-                    renderer.material = kv.Key;
-                    filter.mesh = kv.Value.GetCombineMesh();
-                }
-                this.rendererSet = null;
-                this.prefabInfo = null;
+                return;
             }
+            foreach (var kv in this.rendererSet)
+            {
+                if (kv.Key == null || kv.Value == null) { continue; }
+
+                CreateSubObject(kv.Key.name, p, kv.Value.GetCombineMesh(), kv.Key);
+            }
+            this.rendererSet = null;
+            this.prefabInfo = null;
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="p"></param>
+        /// <param name="vertexBorder"></param>
+        /// <param name="sortFunc"></param>
+        public void Generate(Transform p, int vertexBorder, System.Func<Vector3, Vector3, int> sortFunc)
+        {
+            if (this.rendererSet == null)
+            {
+                return;
+            }
+            foreach (var kv in this.rendererSet)
+            {
+                if (kv.Key == null || kv.Value == null) { continue; }
+                var buffer = kv.Value;
+                int length = buffer.Count;
+                int groupIdx = 0;
+                int vertCount = 0;
+                int beforeGroupIdx = 0;
+                buffer.Sort(sortFunc);
+                for (int i = 0; i < length; ++i) {
+                    vertCount += buffer.GetVertexCount(i);
+
+                    if (i == length - 1 || vertCount >= vertexBorder)
+                    {
+                        this.CreateSubObject(kv.Key.name + groupIdx, p, buffer.GetCombineMesh(beforeGroupIdx, i - beforeGroupIdx + 1), kv.Key);
+                        vertCount = 0;
+                        beforeGroupIdx = i + 1;
+                        ++ groupIdx;
+                    }
+                }
+            }
+            this.rendererSet = null;
+            this.prefabInfo = null;
+        }
+
+        /// <summary>
+        /// サブのオブジェクトを作成します
+        /// </summary>
+        /// <param name="name">オブジェクト名</param>
+        /// <param name="p">親を指定</param>
+        /// <param name="mesh">メッシュの指定</param>
+        /// <param name="material">Materialの指定</param>
+        private void CreateSubObject(string name , Transform p, Mesh mesh, Material material)
+        {
+            var obj = new GameObject(name);
+            obj.transform.parent = p;
+            obj.transform.position = Vector3.zero;
+            obj.transform.rotation = Quaternion.identity;
+            var filter = obj.AddComponent<MeshFilter>();
+            var renderer = obj.AddComponent<MeshRenderer>();
+
+            renderer.material = material;
+            filter.mesh = mesh;
+        }
+
     }
 }

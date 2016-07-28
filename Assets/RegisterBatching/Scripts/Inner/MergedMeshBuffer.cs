@@ -24,6 +24,7 @@ SOFTWARE.
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System;
 
 namespace RegisterBatching
 {
@@ -36,6 +37,16 @@ namespace RegisterBatching
         /// 登録した一覧
         /// </summary>
         private List<CombineInstance> combineInstanceList = new List<CombineInstance>();
+
+        /// <summary>
+        /// バッファーのカウント
+        /// </summary>
+        public int Count {
+            get
+            {
+                return combineInstanceList.Count;
+            }
+        }
 
         /// <summary>
         /// データを追加します
@@ -65,6 +76,16 @@ namespace RegisterBatching
         }
 
         /// <summary>
+        /// 指定したIndexのメッシュ数を返します
+        /// </summary>
+        /// <param name="idx">Index指定</param>
+        /// <returns>頂点を返します</returns>
+        public int GetVertexCount(int idx)
+        {
+            return this.combineInstanceList[idx].mesh.vertexCount;
+        }
+
+        /// <summary>
         /// 合体したメッシュを作成して返します
         /// </summary>
         /// <returns>合体したメッシュを返します</returns>
@@ -72,6 +93,37 @@ namespace RegisterBatching
         {
             Mesh mesh = new Mesh();
             mesh.CombineMeshes(this.combineInstanceList.ToArray(), true, true);
+            return mesh;
+        }
+
+        /// <summary>
+        /// 任意の関数でソートします
+        /// </summary>
+        /// <param name="sortFunction">ソート用の関数</param>
+        public void Sort(Func<Vector3, Vector3,int> sortFunction)
+        {
+            combineInstanceList.Sort(
+                (CombineInstance a, CombineInstance b) =>
+                {
+                    return sortFunction( a.transform.GetColumn(3),b.transform.GetColumn(3) );
+                });
+        }
+
+        /// <summary>
+        /// 指定した数だけメッシュにして返します
+        /// </summary>
+        /// <param name="start">開始番号</param>
+        /// <param name="num">終了番号</param>
+        /// <returns>合体したメッシュを返します</returns>
+        public Mesh GetCombineMesh(int start,int num)
+        {
+            CombineInstance[] combineArray = new CombineInstance[num];
+            for (int i = 0; i < num; ++i)
+            {
+                combineArray[i] = this.combineInstanceList[ start + i ];
+            }
+            Mesh mesh = new Mesh();
+            mesh.CombineMeshes(combineArray, true, true);
             return mesh;
         }
     }
