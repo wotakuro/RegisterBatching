@@ -11,7 +11,7 @@ Unity上で BG（背景）用のオブジェクトを配置する際に、同じ
      {
        Vector3 pos = new Vector3(Random.value * 20, 0.0f, Random.value * 30);
        Quaternion rot = Quaternion.AngleAxis(Random.value * 360, Vector3.up);
-       creator.Add(prefab, pos, rot);
+       creator.Add(prefab, pos, rot,Vector3.one);
      }
      creator.Generate(this.transform);
 
